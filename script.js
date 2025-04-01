@@ -165,6 +165,10 @@ function gameLoop() {
     }, 10);
     };
 };
+
+
+
+//FUNCTIONS ________________________________________________________________________
 function pointCheck() {
     let points = document.querySelectorAll('.point');
     let position = player.getBoundingClientRect();
@@ -190,6 +194,23 @@ function enemyHit(){
             }
         }
 }
+
+
+function areColliding() {
+    let position = player.getBoundingClientRect();
+    let wall = querySelectorAll('wall');
+    
+    for (let i = 0; i < wall.length; i++) {
+        let pos = wall[i].getBoundingClientRect();
+        if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom) {
+            return true
+           }
+           return false
+    }
+};
+
+//___________________________________________________________________________________
+
 function startgame(){
     startbtn.style.display = "none";
     playable = true;
