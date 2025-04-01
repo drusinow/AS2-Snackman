@@ -3,7 +3,7 @@ let downPressed = false;
 let leftPressed = false;
 let rightPressed = false;
 let playable = false;
-let playerSpeed = 5;
+let playerSpeed = 2;
 const main = document.querySelector('main');
 const startbtn = document.querySelector('.start');
 
@@ -78,21 +78,39 @@ function keyDown(event) {
     }
 }
 
+
+//Score And Lives
+const scoretext = document.querySelector('.score p')
+let score = 0
+
+const liveslist = document.querySelector('.lives ul')
+
+let livetoremove;
+for(let i = 0; i < liveslist.children.length; i++) { // get child of ul and set livetoremove to next li.
+    livetoremove = liveslist.children[i];
+}
+
+
+//player movement and player
 const player = document.querySelector('#player');
 const playerMouth = player.querySelector('.mouth');
 const playerpos = player.getBoundingClientRect();
 let playerTop = 0;
 let playerLeft = 0;
 
-function movement() {
+function gameLoop() {
     if (playable == true) {
+        score = 0;
     setInterval(function() {
+        pointCheck();
+        enemyHit();
+        //Movement
         if(downPressed) {
             let position = player.getBoundingClientRect();
-            let posdown = position.bottom + 1;
+            let posdown = position.bottom + 2;
 
-            let btmL = document.elementFromPoint(position.left, newBottom);
-            let btmR = document.elementFromPoint(position.right, newBottom);
+            let btmL = document.elementFromPoint(position.left, posdown);
+            let btmR = document.elementFromPoint(position.right, posdown);
 
             if (btmL.classList.contains('wall') == false && btmR.classList.contains('wall') == false) {
                 playerTop += playerSpeed;
@@ -103,28 +121,79 @@ function movement() {
             playerMouth.classList = 'down';
         }
         else if(upPressed) {
-            playerTop -= playerSpeed;
-            player.style.top = playerTop + 'px';
+            let position = player.getBoundingClientRect();
+            let posup = position.top - 2;
+
+            let topL = document.elementFromPoint(position.left, posup);
+            let topR = document.elementFromPoint(position.right, posup);
+
+            if (topL.classList.contains('wall') == false && topR.classList.contains('wall') == false) {
+                playerTop -= playerSpeed;
+                player.style.top = playerTop + 'px';
+            }
+
             playerMouth.classList = 'up';
         }
         else if(leftPressed) {
-            playerLeft -= playerSpeed;
-            player.style.left = playerLeft + 'px';
+            let position = player.getBoundingClientRect();
+            let posleft = position.left - 2;
+
+            let leftT = document.elementFromPoint(posleft, position.top);
+            let leftB = document.elementFromPoint(posleft, position.bottom);
+            
+            if (leftT.classList.contains('wall') == false && leftB.classList.contains('wall') == false) {
+                playerLeft -= playerSpeed;
+                player.style.left = playerLeft + 'px';
+            }
+
             playerMouth.classList = 'left';
         }
         else if(rightPressed) {
+            let position = player.getBoundingClientRect();
+            let posright = position.right + 2;
+
+            let rightT = document.elementFromPoint(posright, position.top);
+            let rightB = document.elementFromPoint(posright, position.bottom);
+            
+            if (rightT.classList.contains('wall') == false && rightB.classList.contains('wall') == false) {
             playerLeft += playerSpeed;
             player.style.left = playerLeft + 'px';
-            playerMouth.classList = 'right';
+            }
+            playerMouth.classList = 'right';   
+            
         }
     }, 10);
     };
 };
+function pointCheck() {
+    let points = document.querySelectorAll('.point');
+    let position = player.getBoundingClientRect();
+    for (let i = 0; i < points.length; i++) {
+        let pos = points[i].getBoundingClientRect();
+        if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom) {
+            points[i].classList.remove('point');
+            score += 10;
+            console.log(score)
+            scoretext.innerHTML = score;
+            }
+        }
+};
 
+function enemyHit(){
+    let enemy = document.querySelectorAll('.enemy');
+    let position = player.getBoundingClientRect();
+
+    for (let i = 0; i < enemy.length; i++) {
+        let pos = enemy[i].getBoundingClientRect();
+        if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom) {
+                liveslist.removeChild(livetoremove);
+            }
+        }
+}
 function startgame(){
     startbtn.style.display = "none";
     playable = true;
-    movement()
+    gameLoop();
 };
 
 
