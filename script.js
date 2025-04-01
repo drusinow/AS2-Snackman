@@ -88,8 +88,18 @@ function movement() {
     if (playable == true) {
     setInterval(function() {
         if(downPressed) {
-            playerTop += playerSpeed;
-            player.style.top = playerTop + 'px';
+            let position = player.getBoundingClientRect();
+            let posdown = position.bottom + 1;
+
+            let btmL = document.elementFromPoint(position.left, newBottom);
+            let btmR = document.elementFromPoint(position.right, newBottom);
+
+            if (btmL.classList.contains('wall') == false && btmR.classList.contains('wall') == false) {
+                playerTop += playerSpeed;
+                player.style.top = playerTop + 'px';
+            }
+
+
             playerMouth.classList = 'down';
         }
         else if(upPressed) {
