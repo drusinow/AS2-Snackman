@@ -7,8 +7,7 @@
     const main = document.querySelector('main');
     const startbtn = document.querySelector('.start');
     const continuebtn = document.querySelector('.continue')
-    let startingLeft;
-    let startingTop;
+    let startingPos;
 
     //Player = 2, Wall = 1, Enemy = 3, Point = 0
     let maze = [
@@ -24,6 +23,16 @@
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
 
+    //loop to get starting player coordinates
+
+    for(let i = 0; i < maze.length; i++) {
+        for(let j = 0; j < maze[i].length; j++){
+            if (maze[i][j] == 2){
+                startingPos = [i,j];
+            }
+        }
+    }
+    console.log(startingPos);
 
 
     //Populates the maze in the HTML
@@ -82,10 +91,10 @@
 
 
     //Score And Lives
-    const scoretext = document.querySelector('.score p')
-    let score = 0
+    const scoretext = document.querySelector('.score p');
+    let score = 0;
 
-    const liveslist = document.querySelector('.lives ul')
+    const liveslist = document.querySelector('.lives ul');
 
     let livetoremove;
     for(let i = 0; i < liveslist.children.length; i++) { // get child of ul and set livetoremove to next li.
@@ -94,16 +103,14 @@
 
 
     //player movement and player
-    const player = document.querySelector('#player');
-    const playerMouth = player.querySelector('.mouth');
+    let player = document.querySelector('#player'); // changed to let to handle placing player again after hit same with below.
+    let playerMouth = player.querySelector('.mouth');
     const playerPos = player.getBoundingClientRect();
     let playerTop = 0;
     let playerLeft = 0;
 
 
 
-    console.log(startingTop)
-    console.log(startingLeft)
     function gameLoop() {
         if (playable == true) {
             score = 0;
@@ -210,13 +217,14 @@
             }
     };
 
-    function enemyHit(futurePos){
+    function enemyHit(){
         let enemy = document.querySelectorAll('.enemy');
         let position = player.getBoundingClientRect();
 
         for (let i = 0; i < enemy.length; i++) {   
             let pos = enemy[i].getBoundingClientRect();
             if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom) {
+                continuebtn.style.display = "flex";
                 enemyHitFunctionality()
                 }
             }
@@ -240,49 +248,65 @@
     function enemyHitFunctionality() {
         if (liveslist.children.length > 0){
             liveslist.removeChild(livetoremove);
+            console.log(liveslist)
+            console.log(liveslist.children.length)
             console.log("removed a life");
-            continuebtn.style.display = "flex";
-            // use saved player starting position to place player back to starting pos
-            getPlayerMazePos()
-            playerTop = startingTop;
-            playerLeft = startingLeft;
 
-            player.style.top = playerTop + 'px';
-            player.style.left = playerLeft + 'px';
-            console.log(startingLeft)
-            console.log(startingTop)
-
+            void player.offsetWidth; // force reflow, ensures animation actually plays - offsetwidth(serves no functionality) used to recalculate layout/reflow
+            player.classList.add('hit'); // add and play hit animation
             
+            //once hit animation is finished -> 1.5s, remove hit classlist.
+            player.addEventListener('animationend', () => {
+                player.classList.remove('hit');
+                
+            //creates an empty block
+            const newElement = document.createElement('div');
+            newElement.classList.add('emptydiv');
+            //uses replacechild to replace player with the emptydiv - if not it would break the entire maze.
+            main.replaceChild(newElement, player);
+
+            }, { once: true });
+
+
         }
         else if(liveslist.children.length = 0){
             //display restart button
+            // play death animation rather than hit animation
         }
 
     };  
 
+    //fucntion for handling the placement of the player into its starting position
+    function placePlayer() {
+        const [i, j] = startingPos; 
+        const index = i * maze[0].length + j; // bit messy but gets the specific element which needs to be replaced. corresponds with the i,j
+        const oldBlock = main.children[index]; // actuall 'block'
+    
+        // create new player block
+        const block = document.createElement('div');
+        block.classList.add('block');
+        block.id = 'player';
+    
+        const mouth = document.createElement('div');
+        mouth.classList.add('mouth');
+        block.appendChild(mouth);
+    
+        // replace the old block with the new player block
+        main.replaceChild(block, oldBlock);
+    
+        // update global player references
+        player = block;
+        playerMouth = mouth;
+        playerLeft = 0;
+        playerTop = 0;
+        player.style.left = playerLeft + 'px';
+        player.style.top = playerTop + 'px';
 
-    function getPlayerMazePos() {
+        player = document.querySelector('#player'); // new reference to the DOM element -> otherwise functions like enemyhit will be checking the old player dom element
+        playerMouth = player.querySelector('.mouth');
+        console.log("running");
+    }
 
-        const blockSize = main.querySelector('.block').offsetWidth; // gets size of block, to get propper starting pos. startingpos = startinggridx * blocksize 
-        let startingGridX = 0;
-        let startingGridY = 0;
-
-        for (let y = 0; y < maze.length; y++) {
-            for (let x = 0; x < maze[y].length; x++) {
-                if (maze[y][x] === 2) {
-                    startingGridX = x;
-                    startingGridY = y;
-                    break;
-                }
-            }
-            if (maze[y].includes(2)) break; // exit outer loop once found
-        }
-
-        startingLeft = startingGridX * blockSize;
-        startingTop = startingGridY * blockSize;
-        console.log(startingLeft)
-        console.log(startingTop)
-    };
     //___________________________________________________________________________________
 
     function startgame(){
@@ -296,6 +320,11 @@
     startbtn.addEventListener('click', startgame)
     document.addEventListener('keydown', keyDown);
     document.addEventListener('keyup', keyUp);
+
+    continuebtn.addEventListener('click', () => {
+        continuebtn.style.display = "none";
+        placePlayer();
+});
 
 
 
