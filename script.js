@@ -7,6 +7,7 @@
     const main = document.querySelector('main');
     const startbtn = document.querySelector('.start');
     const continuebtn = document.querySelector('.continue')
+    const gameOverbtn = document.querySelector('.gameOver')
     let startingPos;
 
     //Player = 2, Wall = 1, Enemy = 3, Point = 0
@@ -108,6 +109,7 @@
     const playerPos = player.getBoundingClientRect();
     let playerTop = 0;
     let playerLeft = 0;
+    let moveLock = false;
 
 
 
@@ -118,6 +120,7 @@
             pointCheck();
             enemyHit();
             //Movement
+            if (moveLock == false) { // for when player gets hit
             if(downPressed) {
                 let position = player.getBoundingClientRect();
 
@@ -186,6 +189,7 @@
                 playerMouth.classList = 'right';   
                 
             }
+        }
         }, 10);
         };
     };
@@ -217,14 +221,14 @@
             }
     };
 
+    let isHit = false;
     function enemyHit(){
         let enemy = document.querySelectorAll('.enemy');
         let position = player.getBoundingClientRect();
 
         for (let i = 0; i < enemy.length; i++) {   
             let pos = enemy[i].getBoundingClientRect();
-            if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom) {
-                continuebtn.style.display = "flex";
+            if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom && isHit == false) {
                 enemyHitFunctionality()
                 }
             }
@@ -246,10 +250,17 @@
     };
 
     function enemyHitFunctionality() {
-        if (liveslist.children.length > 0){
+        isHit = true;
+        moveLock = true;
+        console.log("HIT");
+        console.log(liveslist.children.length)
+        if (liveslist.children.length > 1){
+            continuebtn.style.display = "flex";
+
+            lifeRemove()
+
             liveslist.removeChild(livetoremove);
-            console.log(liveslist)
-            console.log(liveslist.children.length)
+
             console.log("removed a life");
 
             void player.offsetWidth; // force reflow, ensures animation actually plays - offsetwidth(serves no functionality) used to recalculate layout/reflow
@@ -269,9 +280,10 @@
 
 
         }
-        else if(liveslist.children.length = 0){
+        else if(liveslist.children.length <= 1){
             //display restart button
             // play death animation rather than hit animation
+            gameOver();1
         }
 
     };  
@@ -307,6 +319,18 @@
         console.log("running");
     }
 
+
+    function lifeRemove() {
+        for(let i = 0; i < liveslist.children.length; i++) { // get child of ul and set livetoremove to next li.
+            livetoremove = liveslist.children[i];
+        }
+    }
+
+    function gameOver() {
+        gameOverbtn.style.display = "flex";
+
+    };
+
     //___________________________________________________________________________________
 
     function startgame(){
@@ -315,6 +339,8 @@
         gameLoop();
     };
     continuebtn.style.display = "none";
+    gameOverbtn.style.display = "none";
+
 
     // continuebtn.addEventListener('click', )
     startbtn.addEventListener('click', startgame)
@@ -323,6 +349,8 @@
 
     continuebtn.addEventListener('click', () => {
         continuebtn.style.display = "none";
+        isHit = false;
+        moveLock = false;
         placePlayer();
 });
 
