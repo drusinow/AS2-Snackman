@@ -1,3 +1,6 @@
+import { Leaf, generateBSPMap } from './mapGeneration.js';
+
+    
     let upPressed = false;
     let downPressed = false;
     let leftPressed = false;
@@ -10,19 +13,23 @@
     const gameOverbtn = document.querySelector('.gameOver')
     let startingPos;
 
+    const { maze, playerStart } = generateBSPMap(20, 20);
+    maze[playerStart.y][playerStart.x] = 2;
+    renderMaze(maze);
+
     //Player = 2, Wall = 1, Enemy = 3, Point = 0
-    let maze = [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 1, 0, 0, 0, 0, 3, 1],
-        [1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 1, 1, 0, 2, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-        [1, 0, 0, 1, 0, 3, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-        [1, 3, 1, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ];
+    // let maze = [
+    //     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    //     [1, 0, 0, 1, 0, 0, 0, 0, 3, 1],
+    //     [1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    //     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    //     [1, 0, 1, 1, 0, 2, 0, 0, 0, 1],
+    //     [1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    //     [1, 0, 0, 1, 0, 3, 0, 0, 0, 1],
+    //     [1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    //     [1, 3, 1, 0, 0, 0, 0, 0, 0, 1],
+    //     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    // ];
 
     //loop to get starting player coordinates
 
@@ -34,37 +41,79 @@
         }
     }
     console.log(startingPos);
-
+    console.log(maze)
 
     //Populates the maze in the HTML
-    for (let y of maze) {
-        for (let x of y) {
-            let block = document.createElement('div');
-            block.classList.add('block');
+    function renderMaze(maze) {
+        const main = document.querySelector('main');
+        main.innerHTML = '';
+    
+        const rows = maze.length;
+        const cols = maze[0].length;
+    
+        // Set CSS grid based on maze dimensions
+        main.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        main.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const block = document.createElement('div');
+                block.classList.add('block');
+    
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+    
+                switch (maze[y][x]) {
+                    case 1: {
+                        cell.classList.add('wall');
+                        break;
+                    }
+                    case 2: {
+                        const playerDiv = document.createElement('div');
+                        playerDiv.id = 'player';
+    
+                        const mouth = document.createElement('div');
+                        mouth.classList.add('mouth');
+    
+                        playerDiv.appendChild(mouth);
+                        cell.appendChild(playerDiv);
+                        break;
+                    }
+                    case 3: {
+                        const enemy = document.createElement('div');
+                        enemy.classList.add('enemy');
+                        cell.appendChild(enemy);
+                        break;
+                    }
+                    default:
+                    // Create a point element inside the cell
+                    const point = document.createElement('div');
+                    point.classList.add('point');
+                    cell.appendChild(point);
+                    
+                    // Randomly decide if this point should become an enemy
+                    if (Math.random() < 0.05) {
+                        const enemy = document.createElement('div');
+                        enemy.classList.add('enemy');
+                        cell.removeChild(point)
+                        cell.appendChild(enemy);
+                        maze[y][x] = 3; // Update underlying maze array
+                    }
+                    break;
+                    
 
-            switch (x) {
-                case 1:
-                    block.classList.add('wall');
-                    break;
-                case 2:
-                    block.id = 'player';
-                    let mouth = document.createElement('div');
-                    mouth.classList.add('mouth');
-                    block.appendChild(mouth);
-                    break;
-                case 3:
-                    block.classList.add('enemy');
-                    break;
-                default:
-                    block.classList.add('point');
-                    block.style.height = '1vh';
-                    block.style.width = '1vh';
+                }
+    
+                block.appendChild(cell);
+                main.appendChild(block);
             }
-
-            main.appendChild(block);
         }
     }
 
+    function defaultCase() {
+        
+    }
+    
     //Player movement
     function keyUp(event) {
         if (event.key === 'ArrowUp') {

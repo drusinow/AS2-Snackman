@@ -21,6 +21,7 @@ body {
     justify-items: center;
 }
 
+
 header {
     grid-area: header;
     text-align: center;
@@ -113,12 +114,10 @@ header h1 {
 main {
     grid-area: main;
     display: grid;
-    grid-template-columns: repeat(10, 10%);
     width: 80vh;
     height: 80vh;
-    align-items: center;
-    justify-items: center;
 }
+
 
 /* Lives styling */
 .lives {
@@ -178,12 +177,33 @@ div p {
     font-size: 2em;
 }
 
+
+.block {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+
+
+.point {
+    width: 15%;
+    height: 15%;
+    background-color: gold;
+    border-radius: 50%;
+    opacity: 0.7;
+    position: absolute; 
+}
+
 #player {
     background-color: yellow;
     border-radius: 100%;
+    width: 65%;
+    height: 65%;
     position: relative;
-    width: 85%;
-    height: 85%;
 }
 
 .enemy {
@@ -191,12 +211,9 @@ div p {
     border-radius: 100%;
     height: 90%;
     width: 90%;
-    position: relative;
-}
-
-.point {
-    border-radius: 100%;
-    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .wall {
@@ -204,6 +221,16 @@ div p {
     width: 100%;
     height: 100%;
 }
+
+.cell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
 
 /* Styles for the player direction */
 .up, .down, .left, .right {
