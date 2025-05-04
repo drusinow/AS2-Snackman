@@ -119,6 +119,7 @@
         setInterval(function() {
             pointCheck();
             enemyHit();
+            gameWin();
             //Movement
             if (moveLock == false) { // for when player gets hit
             if(downPressed) {
@@ -221,6 +222,13 @@
             }
     };
 
+    function gameWin() {
+        if (score == maxLevelPoints) {
+            startbtn.style.display = 'flex';
+        }
+    }
+
+
     let isHit = false;
     function enemyHit(){
         let enemy = document.querySelectorAll('.enemy');
@@ -283,7 +291,7 @@
         else if(liveslist.children.length <= 1){
             //display restart button
             // play death animation rather than hit animation
-            gameOver();1
+            gameOver();
         }
 
     };  
@@ -329,7 +337,33 @@
     function gameOver() {
         gameOverbtn.style.display = "flex";
 
+        void player.offsetWidth; // force reflow, ensures animation actually plays - offsetwidth(serves no functionality) used to recalculate layout/reflow
+        player.classList.add('dead'); // add and play hit animation
+        
+        //once hit animation is finished -> 1.5s, remove hit classlist.
+        player.addEventListener('animationend', () => {
+            player.classList.remove('dead');
+
+            //creates an empty block
+            const newElement = document.createElement('div');
+            newElement.classList.add('emptydiv');
+            //uses replacechild to replace player with the emptydiv - if not it would break the entire maze.
+            main.replaceChild(newElement, player);
+
+            }, { once: true });
+
     };
+    let maxLevelPoints = 0;
+    function getLevelPoints() {
+
+        for(let i = 0; i < maze.length; i++) {
+            for(let j = 0; j < maze[i].length; j++){
+                if (maze[i][j] == 0){
+                    maxLevelPoints += 10;
+                }
+            }
+        }
+    }
 
     //___________________________________________________________________________________
 
@@ -337,6 +371,7 @@
         startbtn.style.display = "none";
         playable = true;
         gameLoop();
+        getLevelPoints();
     };
     continuebtn.style.display = "none";
     gameOverbtn.style.display = "none";

@@ -107,7 +107,7 @@ header {
 
 header h1 {
     font-size: 4em;
-    animation: gameOver 1.25s infinite steps(1, end);
+    /* animation: gameOver 1.25s infinite steps(1, end); */
 }
 
 main {
@@ -284,8 +284,8 @@ button:nth-child(4) { grid-area: downArrow; }
 .hit {
     animation: hitAnimation 1.5s ease-in-out;
 }
-
+/* 
 @keyframes gameOver {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
-}
+} */
