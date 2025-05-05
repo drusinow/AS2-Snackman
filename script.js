@@ -12,6 +12,10 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     const continuebtn = document.querySelector('.continue')
     const gameOverbtn = document.querySelector('.gameOver')
     let startingPos;
+    let enemyStates = [];
+    let allowBotMove = true;
+    let gameInterval = null;
+
 
     const { maze, playerStart } = generateBSPMap(20, 20);
     maze[playerStart.y][playerStart.x] = 2;
@@ -95,7 +99,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
                     if (Math.random() < 0.05) {
                         const enemy = document.createElement('div');
                         enemy.classList.add('enemy');
-                        cell.removeChild(point)
+                        cell.removeChild(point);
                         cell.appendChild(enemy);
                         maze[y][x] = 3; // Update underlying maze array
                     }
@@ -108,6 +112,16 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
                 main.appendChild(block);
             }
         }
+        
+        const enemies = document.querySelectorAll('.enemy');
+        enemies.forEach((enemy, index) => {
+            enemyStates.push({
+                element: enemy,
+                direction: getRandomDirection(),
+                lastChange: Date.now(),
+                id: index
+        });
+        }) 
     }
 
     function defaultCase() {
@@ -165,10 +179,11 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     function gameLoop() {
         if (playable == true) {
             score = 0;
-        setInterval(function() {
+        gameInterval = setInterval(function() {
             pointCheck();
             enemyHit();
             gameWin();
+            enemyMove(allowBotMove);
             //Movement
             if (moveLock == false) { // for when player gets hit
             if(downPressed) {
@@ -334,7 +349,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
             main.replaceChild(newElement, player);
 
             }, { once: true });
-
+            allowBotMove = false;
 
         }
         else if(liveslist.children.length <= 1){
@@ -385,6 +400,8 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
 
     function gameOver() {
         gameOverbtn.style.display = "flex";
+        
+        clearInterval(gameInterval);
 
         void player.offsetWidth; // force reflow, ensures animation actually plays - offsetwidth(serves no functionality) used to recalculate layout/reflow
         player.classList.add('dead'); // add and play hit animation
@@ -404,7 +421,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     };
     let maxLevelPoints = 0;
     function getLevelPoints() {
-
+        maxLevelPoints = 0;
         for(let i = 0; i < maze.length; i++) {
             for(let j = 0; j < maze[i].length; j++){
                 if (maze[i][j] == 0){
@@ -413,6 +430,50 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
             }
         }
     }
+    let enemySpeed = playerSpeed * 0.7;
+
+    function enemyMove(allow) {
+        if (allow){
+        const now = Date.now();
+    
+        enemyStates.forEach(state => {
+            const enemy = state.element;
+            let moveX = 0, moveY = 0;
+    
+            switch (state.direction) {
+                case 'up': moveY = -enemySpeed; break;
+                case 'down': moveY = enemySpeed; break;
+                case 'left': moveX = -enemySpeed; break;
+                case 'right': moveX = enemySpeed; break;
+            }
+    
+            // Calculate future position
+            const pos = enemy.getBoundingClientRect();
+            const futurePos = {
+                top: pos.top + moveY,
+                bottom: pos.bottom + moveY,
+                left: pos.left + moveX,
+                right: pos.right + moveX
+            };
+    
+            // Check collision or 2 seconds passed
+            if (areColliding(futurePos) || now - state.lastChange >= 2000) {
+                state.direction = getRandomDirection();
+                state.lastChange = now;
+            } else {
+                enemy.style.top = (enemy.offsetTop + moveY) + 'px';
+                enemy.style.left = (enemy.offsetLeft + moveX) + 'px';
+            }
+        });
+    }
+    }
+    
+
+    function getRandomDirection() {
+        const directions = ['up', 'down', 'left', 'right'];
+        return directions[Math.floor(Math.random() * directions.length)];
+    }
+    
 
     //___________________________________________________________________________________
 
@@ -435,39 +496,6 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         continuebtn.style.display = "none";
         isHit = false;
         moveLock = false;
+        allowBotMove = true;
         placePlayer();
 });
-
-
-
-
-
-    // // Function to enforce a 2-block perimeter around the player
-    // function enforcePlayerPerimeter(maze, playerY, playerX) {
-    //     const perimeterSize = 2; // 2-block radius
-    //     for (let y = playerY - perimeterSize; y <= playerY + perimeterSize; y++) {
-    //         for (let x = playerX - perimeterSize; x <= playerX + perimeterSize; x++) {
-    //             if (
-    //                 y >= 0 && y < maze.length &&         // Check bounds
-    //                 x >= 0 && x < maze[0].length &&      // Check bounds
-    //                 maze[y][x] === 3                     // If enemy is found in perimeter
-    //             ) {
-    //                 maze[y][x] = 0; // Replace enemy with a point
-    //             }
-    //         }
-    //     }
-    // }
-
-    // // Find player position (assumes player exists in maze)
-    // let playerY, playerX;
-    // for (let y = 0; y < maze.length; y++) {
-    //     const x = maze[y].indexOf(2);
-    //     if (x !== -1) {
-    //         playerY = y;
-    //         playerX = x;
-    //         break;
-    //     }
-    // }
-
-    // // Apply perimeter rule
-    // enforcePlayerPerimeter(maze, playerY, playerX);
