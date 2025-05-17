@@ -11,13 +11,17 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     const startbtn = document.querySelector('.start');
     const continuebtn = document.querySelector('.continue')
     const gameOverbtn = document.querySelector('.gameOver')
+    const nextLevel = document.querySelector('.nextLevel')
     let startingPos;
     let enemyStates = [];
     let allowBotMove = true;
     let gameInterval = null;
 
 
-    const { maze, playerStart } = generateBSPMap(20, 20);
+
+
+
+    const { maze, playerStart } = generateBSPMap(15, 15);
     maze[playerStart.y][playerStart.x] = 2;
     renderMaze(maze);
 
@@ -124,9 +128,6 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         }) 
     }
 
-    function defaultCase() {
-        
-    }
     
     //Player movement
     function keyUp(event) {
@@ -154,9 +155,26 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     }
 
 
-    //Score And Lives
+    //Score, Lives and levels
     const scoretext = document.querySelector('.score p');
     let score = 0;
+    
+    const levelText = document.querySelector('.level p');
+    let level = 0;
+
+    let difficulty = {
+        easy: 15, 
+        medium: 30, 
+        hard: 55
+    };
+
+    function levelSystem() {
+        // 5 = 15
+        // 15 = 30
+        // 30 = 55
+
+
+    };
 
     const liveslist = document.querySelector('.lives ul');
 
@@ -178,7 +196,6 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
 
     function gameLoop() {
         if (playable == true) {
-            score = 0;
         gameInterval = setInterval(function() {
             pointCheck();
             enemyHit();
@@ -259,17 +276,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         };
     };
 
-    //Game Logic 
 
-
-    function gameLogic() {
-        //If player hits an enemy, play death animaiton, remove a life, then start again with current map.
-        //if player gets all points, next level
-        // game over when out of lives or all points collected
-        
-
-
-    }
 
     //FUNCTIONS ________________________________________________________________________
     function pointCheck() {
@@ -280,7 +287,6 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
             if (position.right > pos.left && position.left < pos.right && position.bottom > pos.top && position.top < pos.bottom) {
                 points[i].classList.remove('point');
                 score += 10;
-                console.log(score)
                 scoretext.innerHTML = score;
                 }
             }
@@ -288,7 +294,9 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
 
     function gameWin() {
         if (score == maxLevelPoints) {
-            startbtn.style.display = 'flex';
+            nextLevel.style.display = 'flex';
+            allowBotMove = false;
+            moveLock = true;
         }
     }
 
@@ -473,18 +481,23 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         const directions = ['up', 'down', 'left', 'right'];
         return directions[Math.floor(Math.random() * directions.length)];
     }
-    
+
+    // make update score/lives function to clean up code
 
     //___________________________________________________________________________________
 
     function startgame(){
         startbtn.style.display = "none";
+        score = 0;
+        scoretext.innerHTML = score;
+        console.log("start clicked")
         playable = true;
         gameLoop();
         getLevelPoints();
     };
     continuebtn.style.display = "none";
     gameOverbtn.style.display = "none";
+    nextLevel.style.display = "none";
 
 
     // continuebtn.addEventListener('click', )
@@ -499,3 +512,9 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         allowBotMove = true;
         placePlayer();
 });
+
+    nextLevel.addEventListener('click', () => {
+        level++;
+
+
+    })

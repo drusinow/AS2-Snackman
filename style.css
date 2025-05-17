@@ -106,6 +106,32 @@ header {
     margin-left: 10px;
 }
 
+.nextLevelDiv {
+    position: absolute;
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
+.nextLevelDiv div {
+	background-color: #ccc;
+    z-index: 100;
+	cursor: pointer;
+	border-radius: 20px;
+	box-shadow: 4px 4px 4px #000;
+    padding: 20px 30px;
+    display: flex;
+    height: 32px;
+}
+
+.nextLevelDiv h1 {
+    text-shadow: 2px 2px 2px #000;
+	font-size: 2em;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
 header h1 {
     font-size: 4em;
     /* animation: gameOver 1.25s infinite steps(1, end); */
@@ -143,9 +169,12 @@ main {
     display: flex;
 }
 
-.score {
+.scoreValues {
     grid-area: score;
+    display: flex;
+    gap: 2em;
 }
+
 
 .leaderboard {
     grid-area: lboard;
@@ -215,6 +244,7 @@ div p {
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 3;
 }
 
 .wall {
