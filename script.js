@@ -6,22 +6,21 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     let leftPressed = false;
     let rightPressed = false;
     let playable = false;
-    let playerSpeed = 2;
+    let playerSpeed = 8;
     const main = document.querySelector('main');
     const startbtn = document.querySelector('.start');
-    const continuebtn = document.querySelector('.continue')
-    const gameOverbtn = document.querySelector('.gameOver')
-    const nextLevel = document.querySelector('.nextLevel')
+    const continuebtn = document.querySelector('.continue');
+    const gameOverbtn = document.querySelector('.gameOver');
+    const nextLevel = document.querySelector('.nextLevel');
     let startingPos;
     let enemyStates = [];
     let allowBotMove = true;
     let gameInterval = null;
+    let numOfEnemies = 0;
+    let enemiesPerRound = 3;
 
 
-
-
-
-    const { maze, playerStart } = generateBSPMap(15, 15);
+    let { maze, playerStart } = generateBSPMap(10, 10);   
     maze[playerStart.y][playerStart.x] = 2;
     renderMaze(maze);
 
@@ -55,6 +54,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     function renderMaze(maze) {
         const main = document.querySelector('main');
         main.innerHTML = '';
+        enemyStates = []; // reset enemy states for game restarts / level change
     
         const rows = maze.length;
         const cols = maze[0].length;
@@ -87,26 +87,21 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
                         cell.appendChild(playerDiv);
                         break;
                     }
-                    case 3: {
-                        const enemy = document.createElement('div');
-                        enemy.classList.add('enemy');
-                        cell.appendChild(enemy);
-                        break;
-                    }
                     default:
                     // Create a point element inside the cell
                     const point = document.createElement('div');
                     point.classList.add('point');
                     cell.appendChild(point);
                     
-                    // Randomly decide if this point should become an enemy
-                    if (Math.random() < 0.05) {
+                    if (Math.random() < 0.000065 && numOfEnemies < enemiesPerRound) { // works quite well, but isnt always well distributed
+                        numOfEnemies++;
                         const enemy = document.createElement('div');
                         enemy.classList.add('enemy');
-                        cell.removeChild(point);
-                        cell.appendChild(enemy);
+                        cell.appendChild(enemy); 
+
                         maze[y][x] = 3; // Update underlying maze array
                     }
+                    
                     break;
                     
 
@@ -118,6 +113,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         }
         
         const enemies = document.querySelectorAll('.enemy');
+        console.log(enemies.length)
         enemies.forEach((enemy, index) => {
             enemyStates.push({
                 element: enemy,
@@ -161,21 +157,58 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     
     const levelText = document.querySelector('.level p');
     let level = 0;
+    let bspMapSize = 10;
 
-    let difficulty = {
-        easy: 15, 
-        medium: 30, 
-        hard: 55
+
+    function setlevel() { // should call every time a level is completed.
+
+        if(level >= 5 && level <= 9){
+            bspMapSize = 15
+            enemiesPerRound = 5;
+        }
+        else if(level >= 10 && level <= 15){
+            bspMapSize = 20
+            enemiesPerRound = 8;
+        }
+        else if(level > 16){
+            bspMapSize = 25
+            enemiesPerRound = 15;
+        }
+
+       // gens a new maze but updates global maze variable for point recount in the getlevelpoints function
+        const newMazeData = generateBSPMap(bspMapSize, bspMapSize);
+        maze = newMazeData.maze;  
+        playerStart = newMazeData.playerStart;
+        
+        maze[playerStart.y][playerStart.x] = 2;
+        
+    
+        startingPos = [playerStart.y, playerStart.x];
+        
+        // Render maze and reset enemy states
+        renderMaze(maze);
+
+        
+        updatePlayerReferences();
+        
+        // Update score for new level
+        getLevelPoints();
+        score = 0;
+        scoretext.innerHTML = score;
+        
+        // Start game with new settings
+        allowBotMove = true;
+        playable = true;
+        gameLoop();
     };
-
-    function levelSystem() {
-        // 5 = 15
-        // 15 = 30
-        // 30 = 55
-
-
-    };
-
+    
+    function setlives(numOfLives) {
+        for(let i = 0; i < numOfLives; i++){
+            const life = document.createElement("li");
+            liveslist.appendChild(life);
+        }
+        console.log("done");
+    }
     const liveslist = document.querySelector('.lives ul');
 
     let livetoremove;
@@ -196,11 +229,19 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
 
     function gameLoop() {
         if (playable == true) {
+            getLevelPoints()
+
         gameInterval = setInterval(function() {
+
+            if (!player) {//makes sure player exists before running
+                updatePlayerReferences();
+                if (!player) return; // if no player again skip this frame
+            }
             pointCheck();
             enemyHit();
             gameWin();
             enemyMove(allowBotMove);
+            console.log("running game")
             //Movement
             if (moveLock == false) { // for when player gets hit
             if(downPressed) {
@@ -293,7 +334,8 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     };
 
     function gameWin() {
-        if (score == maxLevelPoints) {
+        let enemies = document.querySelectorAll('.enemy')
+        if (score == (maxLevelPoints + (enemies.length * 10))) {
             nextLevel.style.display = 'flex';
             allowBotMove = false;
             moveLock = true;
@@ -334,10 +376,10 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         moveLock = true;
         console.log("HIT");
         console.log(liveslist.children.length)
-        if (liveslist.children.length > 1){
+        if (liveslist.children.length >= 1){
             continuebtn.style.display = "flex";
 
-            lifeRemove()
+            lifeRemove();
 
             liveslist.removeChild(livetoremove);
 
@@ -360,7 +402,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
             allowBotMove = false;
 
         }
-        else if(liveslist.children.length <= 1){
+        else if(liveslist.children.length < 1){
             //display restart button
             // play death animation rather than hit animation
             gameOver();
@@ -427,6 +469,9 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
             }, { once: true });
 
     };
+
+
+
     let maxLevelPoints = 0;
     function getLevelPoints() {
         maxLevelPoints = 0;
@@ -481,6 +526,86 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         const directions = ['up', 'down', 'left', 'right'];
         return directions[Math.floor(Math.random() * directions.length)];
     }
+    // reset everything about the player, for next level functioonality
+    function updatePlayerReferences() {
+        // update player references
+        player = document.querySelector('#player');
+        playerMouth = player ? player.querySelector('.mouth') : null;
+        
+        // reset player position
+        playerLeft = 0;
+        playerTop = 0;
+        if (player) {
+            player.style.left = playerLeft + 'px';
+            player.style.top = playerTop + 'px';
+        }
+        
+        // reset player state
+        isHit = false;
+        moveLock = false;
+    }
+
+//for leaderbaord we use .stringify and .parse, which are json functions that make handling the array of objects easier.
+
+//set initial scoreboard values
+const abc = [
+    { name: 'Sam', score: 12 },
+    { name: 'Kira', score: 10 },
+    { name: 'Alex', score: 8 }
+];
+
+localStorage.setItem('leaderboard', JSON.stringify(abc))
+
+    // load leaderboard from localStorage or initialize empty
+    function loadLeaderboard() {
+        return JSON.parse(localStorage.getItem('leaderboard')) || [];
+    }
+
+    // save leaderboard array back to localStorage
+    function saveLeaderboard(leaderboard) {
+        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+    }
+
+
+    function updateLeaderboard(name, score) {
+        let leaderboard = loadLeaderboard();
+    
+        // check to see if players name already exists
+        const existingIndex = leaderboard.findIndex(entry => entry.name === name);
+        if (existingIndex >= 0) {
+        // updates the score of existing player 
+        if (score > leaderboard[existingIndex].score) {
+            leaderboard[existingIndex].score = score;
+        }
+        } else {
+        // adds new player to the leaderboard
+        leaderboard.push({ name, score });
+        }
+
+        // Sort descending by score
+        leaderboard.sort((a, b) => b.score - a.score);
+
+        leaderboard = leaderboard.slice(0, 5); // keeps only 5 players on leaderboard
+
+        saveLeaderboard(leaderboard);
+
+        // update leaderboard
+        renderLeaderboard(leaderboard);
+}
+
+    function renderLeaderboard(leaderboard) {
+        const ol = document.querySelector('.leaderboard ol');
+        ol.innerHTML = ''; // clear existing list
+    
+        leaderboard.forEach(entry => {
+        const li = document.createElement('li');
+        // Format with dots for spacing
+        li.textContent = `${entry.name}${'.'.repeat(15 - entry.name.length)}${entry.score}`;
+        ol.appendChild(li);
+        });
+    }
+    
+
 
     // make update score/lives function to clean up code
 
@@ -494,6 +619,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
         playable = true;
         gameLoop();
         getLevelPoints();
+        setlives(2);
     };
     continuebtn.style.display = "none";
     gameOverbtn.style.display = "none";
@@ -505,6 +631,32 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     document.addEventListener('keydown', keyDown);
     document.addEventListener('keyup', keyUp);
 
+    gameOverbtn.addEventListener('click', () => {
+            // Reset game state
+        level = 0;
+        levelText.innerHTML = level;
+        bspMapSize = 10;
+        enemiesPerRound = 3;
+        numOfEnemies = 0;
+        
+        renderMaze(maze);
+
+        
+        updatePlayerReferences();
+        
+        getLevelPoints();
+        score = 0;
+        scoretext.innerHTML = score;
+        
+        // Start game with new settings
+        allowBotMove = true;
+        playable = true;
+        setlives(2);
+        gameLoop();
+
+        gameOverbtn.style.display = "none";
+    });
+
     continuebtn.addEventListener('click', () => {
         continuebtn.style.display = "none";
         isHit = false;
@@ -514,7 +666,43 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
 });
 
     nextLevel.addEventListener('click', () => {
-        level++;
 
+    if (level > 5) {
+        const playerName = prompt('Enter your name for the leaderboard:');
+        updateLeaderboard(playerName, level);
+    }
+        
+    // Increment level
+    level++;
+    levelText.innerHTML = level;
+    
+    // Reset game state flags
+    allowBotMove = true;
+    moveLock = false;
+    isHit = false;
+    numOfEnemies = 0;
+    
+    // Clear existing game interval before starting a new one
+    clearInterval(gameInterval);
+    
+    // Generate new level
+    setlevel();
+    
+    // Hide next level button
+    nextLevel.style.display = "none";
+    });
 
-    })
+//commands for common variables AKA console cheats :D
+window.setLevel = function(value) {
+    level = value;
+};
+
+window.toggleEnemyMovement = function() {
+    allowBotMove = !allowBotMove;
+    console.log(`Enemy movement is now ${allowBotMove ? 'enabled' : 'disabled'}`);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const leaderboard = loadLeaderboard();
+    renderLeaderboard(leaderboard);
+});

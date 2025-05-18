@@ -4,7 +4,7 @@ export class Leaf {
       this.y = y;
       this.width = width;
       this.height = height;
-      this.minSize = 6;
+      this.minSize = 1;
   
       this.left = null;
       this.right = null;
@@ -15,13 +15,13 @@ export class Leaf {
     split() {
       if (this.left || this.right) return false;
   
-      // Decide split direction
+      // decide split direction
       const splitH = Math.random() > 0.5;
       const max = splitH ? this.height : this.width;
   
-      if (max <= this.minSize * 2) return false;
+      if (max <= this.minSize * 2 + 3) return false; // 
   
-      const split = Math.floor(Math.random() * (max - this.minSize * 2)) + this.minSize;
+      const split = Math.floor(Math.random() * (max - this.minSize * 2 - 3)) + this.minSize; // just leave it works ....
   
       if (splitH) {
         this.left = new Leaf(this.x, this.y, this.width, split);
@@ -42,8 +42,8 @@ export class Leaf {
       } else {
         const roomSizeW = Math.floor(Math.random() * (this.width - 4)) + 3;
         const roomSizeH = Math.floor(Math.random() * (this.height - 4)) + 3;
-        const roomX = Math.floor(Math.random() * (this.width - roomSizeW - 1)) + this.x + 1;
-        const roomY = Math.floor(Math.random() * (this.height - roomSizeH - 1)) + this.y + 1;
+        const roomX = Math.max(this.x + 1, Math.min(this.x + this.width - roomSizeW - 1, this.x + 1));
+        const roomY = Math.max(this.y + 1, Math.min(this.y + this.height - roomSizeH - 1, this.y + 1));        
   
         this.room = { x: roomX, y: roomY, width: roomSizeW, height: roomSizeH };
   
@@ -98,7 +98,7 @@ export class Leaf {
     }
   }
   
-  export function generateBSPMap(width, height, maxLeaves = 20) {
+  export function generateBSPMap(width, height, maxLeaves = 90) {
     // Fill maze with walls
     const maze = Array.from({ length: height }, () => Array(width).fill(1));
     const root = new Leaf(0, 0, width, height);
@@ -110,7 +110,7 @@ export class Leaf {
       didSplit = false;
       for (let i = 0; i < leaves.length; i++) {
         const leaf = leaves[i];
-        if (!leaf.left && !leaf.right && leaf.width > 12 && leaf.height > 12) {
+        if (!leaf.left && !leaf.right && leaf.width > 1 && leaf.height > 1) {
           if (leaf.split()) {
             leaves.push(leaf.left, leaf.right);
             didSplit = true;
