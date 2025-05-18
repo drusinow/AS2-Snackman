@@ -4,18 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AS2</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Snack Man Map Maker</title>
+    <link rel="stylesheet" href="style2.css">
     <link rel="shortcut icon" href="images/icon.png" type="image/x-icon">
     <script type="module" src="mapmaker.js" defer></script>
 </head>
 
 <body>
-
     <header>
-        <h1>Snack Man!</h1>
+        <h1><a href="index.html" style="text-decoration: none; color: white;">Snack Man!</a></h1>
     </header>
 
+<div class="toolbar">
+
+    <div class="grid-size-selector">
+        <label>Grid Size:
+            <select id="gridSizeSelect">
+                <option value="10">10x10</option>
+                <option value="15">15x15</option>
+                <option value="20">20x20</option>
+                <option value="25">25x25</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="tool-selector">
+        <div class="tool-option selected" data-tool="wall">Wall</div>
+        <div class="tool-option" data-tool="empty">Empty</div>
+        <div class="tool-option" data-tool="player">Player</div>
+        <div class="tool-option" data-tool="enemy">Enemy</div>
+    </div>
+
+    <div class="action-buttons">
+        <button id="generateCodeBtn">Generate Code</button>
+    </div>
+
+</div>
+
+    
 
     <main>
     </main>

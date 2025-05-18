@@ -1,3 +1,7 @@
+// This code is entirely writen by myself, however extensive research had to take place to understand BSP and how i could actualy impliment it with JS. most examples online are writen in c#, or python. It was still difficult to translate this into a well performing JS alernative
+// I spent 1 month of developing before i got to a stage of refined code like this. 
+
+
 export class Leaf {
     constructor(x, y, width, height) {
       this.x = x;
@@ -99,12 +103,12 @@ export class Leaf {
   }
   
   export function generateBSPMap(width, height, maxLeaves = 90) {
-    // Fill maze with walls
+    // fill maze with walls
     const maze = Array.from({ length: height }, () => Array(width).fill(1));
     const root = new Leaf(0, 0, width, height);
     const leaves = [root];
   
-    // Split leaves
+    //split leavees
     let didSplit = true;
     while (didSplit && leaves.length < maxLeaves) {
       didSplit = false;
@@ -119,7 +123,7 @@ export class Leaf {
       }
     }
   
-    // Create rooms and corridors
+    //create rooms and corridors
     root.createRooms(maze);
   
     return {

@@ -1,0 +1,87 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #222;
+    color: white;
+}
+
+header {
+    background-color: #333;
+    padding: 20px;
+    text-align: center;
+}
+
+main {
+    margin: 20px auto;
+    width: fit-content;
+}
+
+/* i hate css*/
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #333;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.grid-size-selector, .tool-selector, .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tool-option {
+    padding: 5px 10px;
+    background-color: #555;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.tool-option.selected {
+    background-color: #007BFF;
+}
+
+button {
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 4px;
+}
+
+input {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    color: black;
+}
+
+.map-cell {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #444;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.wall {
+    background-color: blue;
+}
+
+.empty {
+    background-color: black;
+}
+
+.player {
+    background-color: yellow;
+    border-radius: 50%;
+}
+
+.enemy {
+    background-color: green;
+    border-radius: 50%;
+}

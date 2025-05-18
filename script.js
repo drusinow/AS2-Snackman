@@ -188,22 +188,23 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     
         startingPos = [playerStart.y, playerStart.x];
         
-        // Render maze and reset enemy states
+        //render maze and reset enemy  states
         renderMaze(maze);
 
         
         updatePlayerReferences();
         
-        // Update score for new level
+        // update score for new level
         getLevelPoints();
         score = 0;
         scoretext.innerHTML = score;
         
-        // Start game with new settings
+        // start game with new settings
         allowBotMove = true;
         playable = true;
-        gameLoop();
+        startgame();
     };
+
     
     function setlives(numOfLives) {
         for(let i = 0; i < numOfLives; i++){
@@ -218,6 +219,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     for(let i = 0; i < liveslist.children.length; i++) { // get child of ul and set livetoremove to next li.
         livetoremove = liveslist.children[i];
     }
+
 
 
     //player movement and player
@@ -621,6 +623,8 @@ localStorage.setItem('leaderboard', JSON.stringify(abc))
         scoretext.innerHTML = score;
         console.log("start clicked")
         playable = true;
+        numOfEnemies = 0;
+        clearInterval(gameInterval);
         gameLoop();
         getLevelPoints();
         setlives(2);
@@ -762,11 +766,12 @@ function generateMapFromCode(){
         getLevelPoints();
         score = 0;
         scoretext.innerHTML = score;
+        numOfEnemies = 0;
         
         // Start game with new settings
         allowBotMove = true;
         playable = true;
-        gameLoop();
+        startgame()
 }   
 
 
@@ -825,3 +830,45 @@ const colours = colors.querySelectorAll('li');
             setColor(color)
         });
 }
+
+
+// Movement with goofy arrows 
+
+// 1. Get references to your button elements
+// Get references to button elements
+const leftButton = document.getElementById('lbttn');
+const upButton = document.getElementById('ubttn');
+const rightButton = document.getElementById('rbttn');
+const downButton = document.getElementById('dbttn');
+
+leftButton.addEventListener('click', () => { // to ensure the player moves only in one direction we have to reset other key presses for each key.
+    upPressed = false;
+    downPressed = false;
+    rightPressed = false;
+
+    leftPressed = true;
+});
+
+upButton.addEventListener('click', () => {
+    leftPressed = false;
+    downPressed = false;
+    rightPressed = false;
+
+    upPressed = true;
+});
+
+rightButton.addEventListener('click', () => {
+    upPressed = false;
+    downPressed = false;
+    leftPressed = false;
+
+    rightPressed = true;
+});
+
+downButton.addEventListener('click', () => {
+    upPressed = false;
+    leftPressed = false;
+    rightPressed = false;
+    
+    downPressed = true;
+});
