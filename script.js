@@ -6,7 +6,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
     let leftPressed = false;
     let rightPressed = false;
     let playable = false;
-    let playerSpeed = 8;
+    let playerSpeed = 2;
     const main = document.querySelector('main');
     const startbtn = document.querySelector('.start');
     const continuebtn = document.querySelector('.continue');
@@ -93,7 +93,7 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
                     point.classList.add('point');
                     cell.appendChild(point);
                     
-                    if (Math.random() < 0.000065 && numOfEnemies < enemiesPerRound) { // works quite well, but isnt always well distributed
+                    if (Math.random() < 0.065 && numOfEnemies < enemiesPerRound) { // works quite well, but isnt always well distributed
                         numOfEnemies++;
                         const enemy = document.createElement('div');
                         enemy.classList.add('enemy');
@@ -161,6 +161,9 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
 
 
     function setlevel() { // should call every time a level is completed.
+
+        clearInterval(gameInterval);
+
 
         if(level >= 5 && level <= 9){
             bspMapSize = 15
@@ -356,8 +359,9 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
             }
     }
 
-
+let collisions = true;
     function areColliding(futurePos) {
+        if (collisions == true){
         // let position = player.getBoundingClientRect();
         let wall = document.querySelectorAll('.wall');  
 
@@ -368,8 +372,8 @@ import { Leaf, generateBSPMap } from './mapGeneration.js';
                 }
         }
         return false
-
-    };
+    }
+};
 
     function enemyHitFunctionality() {
         isHit = true;
@@ -706,3 +710,118 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaderboard = loadLeaderboard();
     renderLeaderboard(leaderboard);
 });
+
+
+
+//_________________________________________________HTML STUF____________________________________
+
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('closeside');
+    const sidebar = document.getElementById('sidebar');
+    const openBtn = document.getElementById('openSidebar');
+
+    // Hide sidebar initially
+    sidebar.style.transform = 'translateX(0%)';
+    openBtn.style.display = 'block';
+
+    closeBtn.addEventListener('click', () => {
+        sidebar.style.transform = 'translateX(0%)';
+        openBtn.style.display = 'block';
+    });
+
+    openBtn.addEventListener('click', () => {
+        sidebar.style.transform = 'translateX(100%)';
+        openBtn.style.display = 'none'; // hide the menu button when sidebar is open
+    });
+});
+
+
+// SETTINGS MENU _____________________________________
+
+//make/get code
+const generateCodeButton = document.querySelector('.shareCode');
+generateCodeButton.addEventListener('click', generateCode);
+function generateCode() {
+    const json = JSON.stringify(maze);
+    navigator.clipboard.writeText(btoa(unescape(encodeURIComponent(json))))
+}
+
+//generate map 
+
+const generateMap = document.querySelector('.generateMap');
+generateMap.addEventListener('click', generateMapFromCode);
+
+function generateMapFromCode(){
+    const input = document.getElementById('mapCodeInput').value; // get input value
+    const json = decodeURIComponent(escape(atob(input))); // feed to decode
+        maze = JSON.parse(json)
+        renderMaze(maze); // render maze
+        
+        updatePlayerReferences();
+        
+        getLevelPoints();
+        score = 0;
+        scoretext.innerHTML = score;
+        
+        // Start game with new settings
+        allowBotMove = true;
+        playable = true;
+        gameLoop();
+}   
+
+
+//set difficulty
+
+const easyDifButton = document.querySelector('.easyDif');
+easyDifButton.addEventListener('click', () =>{
+    setDifficulty(1)
+})
+const medDifButton = document.querySelector('.medDif');
+medDifButton.addEventListener('click', () =>{
+    setDifficulty(2)
+})
+const hardDifButton = document.querySelector('.hardDif');
+hardDifButton.addEventListener('click', () =>{
+    setDifficulty(3)
+})
+
+
+function setDifficulty(value){
+    if(value == 1){
+        numOfEnemies = 0;
+        level = 5;
+        setlevel();
+    }
+    else if(value == 2){
+        numOfEnemies = 0;
+        level = 10;
+        setlevel();
+    }
+    else if(value == 3){
+        numOfEnemies = 0;
+        level = 16;
+        setlevel();
+    }
+}
+
+//dissable collisions
+
+const disableCOL = document.querySelector('.disableCol');
+disableCOL.addEventListener('click', () =>{
+    collisions = false;
+})
+
+
+//colors
+function setColor(color) { 
+    player.style.backgroundColor = `${color}`; 
+}
+const colors = document.querySelector('.colours')
+const colours = colors.querySelectorAll('li');
+    for(let i = 0; i < colours.length; i++) {
+        colours[i].addEventListener('click', function(){
+            const color = this.id;
+            console.log(color)
+            setColor(color)
+        });
+}
